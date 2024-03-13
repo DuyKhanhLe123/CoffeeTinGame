@@ -1,147 +1,241 @@
 package a1_2001060033;
-
+import utils.*;
 import java.util.Arrays;
 
+/**
+ * @overview A program that performs the coffee tin game on a
+ * tin of beans and display result on the standard output.
+ *
+ */
 public class CoffeeTinGame {
 
-    public static final char[] BeansBag;
+    /** constant value for the green bean*/
+    private static final char GREEN = 'G';
+    /** constant value for the blue bean*/
+    private static final char BLUE = 'B';
+    /** constant for removed beans */
+    private static final char REMOVED = '-';
+    /** the null character*/
+    private static final char NULL = '\u0000';
+
+    // Beans bag containing beans for replenishment
+    private static final char[] BeansBag = {
+            'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',  // 10 blue beans
+            'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G',  // 10 green beans
+            '-', '-', '-', '-', '-', '-', '-', '-', '-', '-'   // 10 empty spaces
+    };
 
 
+    /**
+     * the main procedure
+     * @effects
+     *    initialise a coffee tin
+     *    {@link TextIO#putf(String, Object...)}: print the tin content
+     *    {@link @tinGame(char[])}: perform the coffee tin game on tin
+     *    {@link TextIO#putf(String, Object...)}: print the tin content again
+     *    if last bean is correct
+     *      {@link TextIO#putf(String, Object...)}: print its colour
+     *    else
+     *      {@link TextIO#putf(String, Object...)}: print an error message
+     */
+    public static void main(String[] args) {
+        // initialise some beans
+        char[][] tins = {
+                {BLUE, BLUE, BLUE, GREEN, GREEN},
+                {BLUE, BLUE, BLUE, GREEN, GREEN, GREEN},
+                {GREEN},
+                {BLUE},
+                {BLUE, GREEN}
+        };
 
+        for (int i = 0; i < tins.length; i++) {
+            char[] tin = tins[i];
 
-    static {
-        // Initialize BeansBag with one-third blue beans (B), one-third green beans (G),
-        // and one-third empty spaces (-)
-        BeansBag = new char[30];
-        int beanCount = BeansBag.length / 3;
-        for (int i = 0; i < beanCount; i++) {
-            BeansBag[i] = 'B'; // Blue beans
-            BeansBag[i + beanCount] = 'G'; // Green beans
-            BeansBag[i + 2 * beanCount] = '-'; // Empty spaces
+            // expected last bean
+            // p0 = green parity /\
+            // (p0=1 -> last=GREEN) /\ (p0=0 -> last=BLUE)
+            // count number of greens
+            int greens = 0;
+            for (char bean : tin) {
+                if (bean == GREEN)
+                    greens++;
+            }
+            // expected last bean
+            final char last = (greens % 2 == 1) ? GREEN : BLUE;
+
+            // print the content of tin before the game
+            System.out.printf("%nTIN (%d Gs): %s %n", greens, Arrays.toString(tin));
+
+            // perform the game
+            // get actual last bean
+            char lastBean = tinGame(tin);
+            // lastBean = last \/ lastBean != last
+
+            // print the content of tin and last bean
+            System.out.printf("tin after: %s %n", Arrays.toString(tin));
+
+            // check if last bean as expected and print
+            if (lastBean == last) {
+                System.out.printf("last bean: %c%n", lastBean);
+            } else {
+                System.out.printf("Oops, wrong last bean: %c (expected: %c)%n", lastBean, last);
+            }
         }
     }
 
-    // (b) Change existing procedures to public
-    public static void tinGame(char[] tin) {
-        while (atLeastTwoBeansInTin(tin)) {
-            char[] beans = takeTwo(tin);
-            updateTin(tin, beans);
-            System.out.println("Takes out" + Arrays.toString(beans));
-            System.out.println("Tin updated: " + Arrays.toString(tin) + "\n");
+    /**
+     * Performs the coffee tin game to determine the colour of the last bean
+     *
+     * @requires tin is not null /\ tin.length > 0
+     * @modifies tin
+     * @effects <pre>
+     *   take out two beans from tin
+     *   if same colour
+     *     throw both away, put one blue bean back
+     *   else
+     *     put green bean back
+     *   let p0 = initial number of green beans
+     *   if p0 = 1
+     *     result = `G'
+     *   else
+     *     result = `B'
+     *   </pre>
+     */
+    public static char tinGame(char[] tin) {
+        while (hasAtLeastTwoBeans(tin)) {
+            // take two beans from tin
+            char[] twoBeans = takeTwo(tin);
+            // process beans to update tin
+            char b1 = twoBeans[0];
+            char b2 = twoBeans[1];
+            // process beans to update tin
+            updateTin(tin, b1, b2);
         }
-        char lastBean = getLastBean(tin);
-        System.out.println("Last bean remaining in the tin: " + lastBean);
-        System.out.println("Game Over.");
+        return anyBean(tin);
     }
 
-    public static char takeOne(char[] tin) {
-        int index = randInt(tin.length - 1);
-        while (tin[index] =='-') index = randInt(tin.length-1);
-        char bean = tin[index] ;
-        tin[index] = '-';
-        return bean;
-    }
-
-    // (c) New public procedures
-    public static int randInt(int n) {
-        return (int)(Math.random() * (n + 1));
-    }
-
-    public static char getBean(char[] beansBag, char beanType) {
-        int index;
-        do {
-            index = randInt(beansBag.length - 1);
-        } while (beansBag[index] != beanType);
-        char bean = beansBag[index];
-        beansBag[index] = '-';
-        return bean;
-    }
-
-    public static void updateTin(char[] tin, char[] beans) {
-        if (beans[0] == beans[1]) {
-            putBlueBean(tin);
-        } else {
-            putGreenBean(tin);
-        }
-    }
-
-    // Helper methods
-    private static boolean atLeastTwoBeansInTin(char[] tin) {
+    /**
+     * @effects
+     *  if tin has at least two beans
+     *    return true
+     *  else
+     *    return false
+     */
+    private static boolean hasAtLeastTwoBeans(char[] tin) {
         int count = 0;
         for (char bean : tin) {
-            if (bean != '-')
+            if (bean != REMOVED) {
                 count++;
+            }
+
+            if (count >= 2) // enough beans
+                return true;
         }
-        return count >= 2;
+
+        // not enough beans
+        return false;
     }
 
+    /**
+     * @requires tin has at least 2 beans left
+     * @modifies tin
+     * @effects
+     *  remove any two beans from tin and return them
+     */
     private static char[] takeTwo(char[] tin) {
-        char[] beans = new char[2];
-        beans[0] = takeOne(tin);
-        beans[1] = takeOne(tin);
-        return beans;
-    }
+        char first = takeOne(tin);
+        char second = takeOne(tin);
 
-    private static void throwAwayBeans(char[] tin, char[] beans) {
-        for (int i = 0; i < tin.length; i++) {
-            if (tin[i] == beans[0] || tin[i] == beans[1]) {
-                tin[i] = '-';
-            }
+        return new char[]{first, second};
+    }
+    /**
+     * @requires tin has at least one bean
+     * @modifies tin
+     * @effects
+     *   remove any bean from tin and return it
+     */
+    public static char takeOne(char[] tin) {
+        int index = randInt(tin.length - 1);
+        while (tin[index] == REMOVED) {
+            index = randInt(tin.length - 1);
         }
+        char bean = tin[index];
+        tin[index] = REMOVED;
+        return bean;
     }
 
-    private static void throwAwayBlueBean(char[] tin, char[] beans) {
+    /**
+     * @requires tin has vacant positions for new beans
+     * @modifies tin
+     * @effects
+     *   place bean into any vacant position in tin
+     */
+    private static void putIn(char[] tin, char bean) {
         for (int i = 0; i < tin.length; i++) {
-            if (tin[i] == 'B') {
-                tin[i] = '-';
+            if (tin[i] == REMOVED) { // vacant position
+                tin[i] = bean;
                 break;
             }
         }
     }
 
-    private static void putBlueBean(char[] tin) {
-        for (int i = 0; i < BeansBag.length; i++) {
-            if (BeansBag[i] == 'B') {
-                BeansBag[i] = '-';
-                break;
-            }
-        }
-
-        for (int i = 0; i < tin.length; i++) {
-            if (tin[i] == '-') {
-                tin[i] = 'B';
-                break;
-            }
-        }
-    }
-
-    private static void putGreenBean(char[] tin) {
-        for (int i = 0; i < tin.length; i++) {
-            if (tin[i] == '-') {
-                tin[i] = 'G';
-                break;
-            }
-        }
-    }
-
-    private static char getLastBean(char[] tin) {
+    /**
+     * @effects
+     *  if there are beans in tin
+     *    return any such bean
+     *  else
+     *    return '\u0000' (null character)
+     */
+    private static char anyBean(char[] tin) {
         for (char bean : tin) {
-            if (bean != '-')
+            if (bean != REMOVED) {
                 return bean;
+            }
         }
-        return '-';
+
+        // no beans left
+        return NULL;
     }
 
-    public static void main(String[] args) {
-        // Example usage
-        char[] tin = {'B','G','B','G','G','G'};
-        System.out.println("Initial contents of the tin: " + Arrays.toString(tin));
-        tinGame(tin);
+    /**
+     *
+     * @param tin The array representing the tin of beans.
+     * @param bean1 The first bean taken out.
+     * @param bean2 The second bean taken out.
+     */
+    public static void updateTin(char[] tin, char bean1, char bean2) {
+        if (bean1 == bean2) {
+            putIn(tin, getBean(BeansBag,BLUE));
+        } else {
+            if (bean1 == BLUE) putIn(tin,bean2);
+            else putIn(tin, bean1);
+        }
     }
 
-    private static void fillTinWithBeans(char[] tin) {
-        for (int i = 0; i < tin.length; i++) {
-            tin[i] = getBean(BeansBag, 'B'); // Fill tin with blue beans
+    /**
+     * Returns a random integer in the range [0, n].
+     *
+     * @param n The upper bound of the random number.
+     * @return A random integer.
+     */
+    public static int randInt(int n) {
+        return (int) (Math.random() * (n + 1));
+    }
+
+    /**
+     * Gets a bean of specified type from the BeansBag and removes it from the bag.
+     *
+     * @param beansBag The array representing the BeansBag.
+     * @param beanType The type of bean to get ('B' for blue, 'G' for green).
+     * @return A randomly-selected bean of the specified type.
+     */
+    public static char getBean(char[] beansBag, char beanType) {
+        int index = randInt(beansBag.length - 1);
+        while (beansBag[index] != beanType) {
+            index = randInt(beansBag.length - 1);
         }
+        char bean = beansBag[index];
+        beansBag[index] = REMOVED;
+        return bean;
     }
 }

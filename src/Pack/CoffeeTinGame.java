@@ -1,5 +1,7 @@
 package Pack;
 import java.util.Arrays;
+import utils.*;
+
 
 /**
  * @overview A program that performs the coffee tin game on a
@@ -18,7 +20,18 @@ public class CoffeeTinGame {
     private static final char NULL = '\u0000';
 
 
-
+    /**
+     * the main procedure
+     * @effects
+     *    initialise a coffee tin
+     *    {@link TextIO#putf(String, Object...)}: print the tin content
+     *    {@link @tinGame(char[])}: perform the coffee tin game on tin
+     *    {@link TextIO#putf(String, Object...)}: print the tin content again
+     *    if last bean is correct
+     *      {@link TextIO#putf(String, Object...)}: print its colour
+     *    else
+     *      {@link TextIO#putf(String, Object...)}: print an error message
+     */
     public static void main(String[] args) {
         // initialise some beans
         char[][] tins = {
