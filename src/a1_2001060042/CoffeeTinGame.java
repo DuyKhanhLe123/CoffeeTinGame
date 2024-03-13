@@ -21,10 +21,7 @@ public class CoffeeTinGame {
     private static final char NULL = '\u0000';
 
     // Beans bag containing beans for replenishment
-    private static final char[] BeansBag = {
-            'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',  // 10 blue beans
-            'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G',  // 10 green beans
-            '-', '-', '-', '-', '-', '-', '-', '-', '-', '-'   // 10 empty spaces
+    private static final char[] BeansBag = {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-'
     };
 
 
