@@ -21,8 +21,20 @@ public class CoffeeTinGame {
     private static final char NULL = '\u0000';
 
     // Beans bag containing beans for replenishment
-    private static final char[] BeansBag = {'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-'
-    };
+    private static final char[] BeansBag;
+
+    static {
+        // Initialize BeansBag with roughly one third of each type
+        int bagSize = 60;
+        int blueCount = bagSize / 3;
+        int greenCount = bagSize / 3;
+        int emptyCount = bagSize - blueCount - greenCount;
+
+        BeansBag = new char[bagSize];
+        Arrays.fill(BeansBag, 0, blueCount, BLUE);
+        Arrays.fill(BeansBag, blueCount, blueCount + greenCount, GREEN);
+        Arrays.fill(BeansBag, blueCount + greenCount, bagSize, REMOVED);
+    }
 
 
     /**

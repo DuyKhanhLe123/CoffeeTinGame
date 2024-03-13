@@ -19,12 +19,28 @@ public class CoffeeTinGame {
     private static final char NULL = '\u0000';
 
     // Beans bag containing beans for replenishment
-    private static final char[] BeansBag = {
-            'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',  // 10 blue beans
-            'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G',  // 10 green beans
-            '-', '-', '-', '-', '-', '-', '-', '-', '-', '-'   // 10 empty spaces
-    };
+    private static final char[] BeansBag;
 
+    static {
+        BeansBag = new char[30];
+        int beansCount = BeansBag.length / 3;
+        int index = 0;
+
+        // Fill one third of the BeansBag array with blue beans ('B')
+        for (int i = 0; i < beansCount; i++) {
+            BeansBag[index++] = 'B';
+        }
+
+        // Fill one third of the BeansBag array with green beans ('G')
+        for (int i = 0; i < beansCount; i++) {
+            BeansBag[index++] = 'G';
+        }
+
+        // Fill the remaining third of the BeansBag array with empty spaces ('-')
+        for (int i = 0; i < beansCount; i++) {
+            BeansBag[index++] = '-';
+        }
+    }
 
     /**
      * the main procedure
